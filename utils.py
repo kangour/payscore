@@ -17,6 +17,8 @@ logger.setLevel(logging.INFO)
 
 
 def iso8601_parse_date(iso8601_string):
+    if isinstance(iso8601_string, int):
+        iso8601_string = str(iso8601_string)
     _datetime = parser.parse(iso8601_string)
     _datetime = _datetime.replace(tzinfo=None)
     return _datetime
