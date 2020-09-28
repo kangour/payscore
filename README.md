@@ -1,7 +1,9 @@
 # payscore
-微信支付分 SDK，包含签名校验、加解密、平台证书更新等。完成了小程序端先享后付（免确认） 的所有 API。
+
+微信支付分 SDK，包含签名校验、加解密、平台证书自动更新等内容。完成了所有公共 API。
 
 # 安装与升级
+
 目前 [payscore](https://github.com/kangour/payscore) 支持的 Python 环境为 python3+，依赖于 [wechatpy](https://github.com/jxtech/wechatpy) 库。
 
 安装 wechatpy
@@ -25,57 +27,70 @@ pip install https://github.com/jxtech/wechatpy/archive/master.zip
 
 安装 payscore
 
-直接克隆 payscore 或子模块克隆到项目即可使用，之后会请求合并到 wechatpy。
+直接克隆 payscore 到项目即可，之后计划合并到 wechatpy。
 
 
-# 先享后付接口
-payscore.api.PayAfter(client=None)
+# 使用演示
 
-    user_service_state() -> bool:
-        """user_service_state
-        查询用户是否可使用服务
-        :param openid: 小程序用户的 openid
-        :rtype: bool
-        """
+```
+#  引入
+from payscore import WeChatPayscore
+#  实例
+wechat_payscore = WeChatPayscore()
+#  调用接口查询用户服务状态
+result = wechat_payscore.payscore.user_service_state(openid=openid)
+logger.info('用户的支付分服务状态: %s', result)
+```
 
-    create() -> bool:
-        """create_payafter_orders
-        创建先享后付订单
-        https://pay.weixin.qq.com/wiki/doc/apiv3/payscore.php?chapter=17_1&index=3
-        :param openid: 必须
-        :param out_order_no: 必须 商户测的支付分订单 ID
-        :param service_start_time: 非必须 服务开始时间
-        :param service_end_time: 非必须 服务结束事件
-        :param service_start_location: 服务开始地点
-        :param service_end_location: 服务结束地点
-        :param service_introduction: 服务介绍
-        :param fees: 费用
-        :param risk_amount: 风险金额
-        :param need_user_confirm: 订单是否需要确认
-        :param **kwargs:
-        :rtype: bool
-        """
 
-    query():
-        """query_payafter_orders
-        查询先享后付订单
-        :param out_order_no: 非必须 商户系统内部服务订单号
-        :param query_id: 非必须 微信侧回跳到商户前端时用于查单的单据查询id, 商户单号与回跳查询id必填其中一个.不允许都填写或都不填写
-        :rtype: bool
-        """
+# 公共接口介绍
 
-    complete():
-        """complete
-        完结先享后付订单
-        https://pay.weixin.qq.com/wiki/doc/apiv3/payscore.php?chapter=17_4&index=6
-        :param out_order_no: 必须 商户系统内部服务订单号
-        :param finish_ticket: 标识用户订单使用情况，1 未使用服务，取消订单；2 完成服务使用，结束订单
-        :param total_amount: 大于等于0的数字，单位为分; 未使用服务，取消订单时，该字段必须填0.
-        :param finish_type: 完结凭证，用于完结订单时传入（每次获取到的字段内容可能变化，但之前获取的字段始终有效，可一直使用）
-        :param fees:
-        :param real_service_end_location:
-        :param cancel_reason:
-        :param real_service_start_time:
-        :param real_service_end_time:
-        :param profit_sharing:
-        """
+def user_service_state(self, openid) -> bool:
+    """
+    查询用户授权状态API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_8.shtml
+    """
+
+def create(self, out_order_no, service_introduction, risk_fund, notify_url, time_range={"start_time": "OnAccept"}, openid=None, **kwargs) -> bool:
+    """
+    创建支付分订单API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_1.shtml
+    """
+
+def query(self, out_order_no=None, query_id=None):
+    """
+    查询支付分订单API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_2.shtml
+    """
+
+def complete(self, out_order_no, post_payments, total_amount, time_range=None, **kwargs):
+    """
+    完结支付分订单API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_5.shtml
+    """
+
+def cancel(self, out_order_no, reason):
+    """
+    取消支付分订单API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_3.shtml
+    """
+
+def modify(self, out_order_no, post_payments, total_amount, reason, **kwargs):
+    """
+    修改订单金额API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_4.shtml
+    """
+
+def pay(self, out_order_no, **kwargs):
+    """
+    商户发起催收扣款API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_6.shtml
+    """
+
+def sync(self, out_order_no, detail, _type='Order_Paid', **kwargs):
+    """
+    同步服务订单信息API
+    https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/payscore/chapter3_7.shtml
+    """
+
+其他免确认预授权 API 请看 payscore/api/payafter.py 文件
