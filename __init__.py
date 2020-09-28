@@ -42,7 +42,8 @@ class WeChatPayscore(object):
     :param timeout: 可选，请求超时时间，单位秒，默认无超时设置
     """
 
-    payscore = api.PayAfter()
+    payscore = api.PayScore()
+    payafter = api.PayAfter()
     """支付分接口"""
 
     API_BASE_URL = 'https://api.mch.weixin.qq.com/'
