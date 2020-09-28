@@ -217,7 +217,7 @@ class WeChatPayscore(object):
     @property
     def wechatpay_cert_pem(self):
         '''
-        查询和更换平台证书工具
+        查询和下载平台证书工具
         如果证书不存在，则下载证书并储存；如果证书已存在，则检查有效性
 
         微信支付会不定期的更换平台证书，建议更换周期为一年，证书有效期五年
@@ -236,14 +236,15 @@ class WeChatPayscore(object):
                     cert_pem = x509.load_pem_x509_certificate(_file.read(), default_backend())
                     # 失效替换（有效期：五年）
                     if cert_pem.not_valid_after < datetime.datetime.now() + datetime.timedelta(days=30):
-                        logger.warn('证书一个月后失效，自动更换')
+                        logger.warn('平台证书一个月后失效，自动更换')
                         self._wechatpay_cert_pem = self.download_wechatpay_cert()
-                    # 例行替换（周期：一年）
-                    time_regular_update = cert_pem.not_valid_before + datetime.timedelta(days=366)
-                    if time_regular_update < datetime.datetime.now():
-                        logger.warn('远端平台证书例行更换，自动更新本地证书')
-                        self._wechatpay_cert_pem = self.download_wechatpay_cert()
-                    self._wechatpay_cert_pem = cert_pem
+                    else:
+                        self._wechatpay_cert_pem = cert_pem
+                    # 例行替换（周期：一年）实际并没有，若想定期更新，只需移动或删除已有的证书即可，会自动下载更新
+                    #  time_regular_update = cert_pem.not_valid_before + datetime.timedelta(days=366)
+                    #  if time_regular_update < datetime.datetime.now():
+                    #      logger.warn('远端平台证书例行更换，自动更新本地证书')
+                    #      self._wechatpay_cert_pem = self.download_wechatpay_cert()
         return self._wechatpay_cert_pem
 
     def download_wechatpay_cert(self):
