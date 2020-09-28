@@ -1,7 +1,7 @@
-from wechatpy.pay.base import BaseWeChatPayAPI
+from .. base import BaseWeChatPayScoreAPI
 
 
-class PayAfter(BaseWeChatPayAPI):
+class PayAfter(BaseWeChatPayScoreAPI):
 
     def permissions(self, authorization_code, **kwargs):
         """

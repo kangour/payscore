@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 from wechatpy.utils import random_string
 from wechatpy.exceptions import WeChatPayException
-from wechatpy.pay.base import BaseWeChatPayAPI
+from . base import BaseWeChatPayScoreAPI
 from . utils import (
     calculate_signature_rsa, check_signature_rsa, decrypt, get_serial_no, get_public_key, build_request_sign_str, build_response_sign_str
 )
@@ -25,7 +25,7 @@ logger.setLevel(logging.INFO)
 
 
 def _is_api_endpoint(obj):
-    return isinstance(obj, BaseWeChatPayAPI)
+    return isinstance(obj, BaseWeChatPayScoreAPI)
 
 
 class WeChatPayscore(object):

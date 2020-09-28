@@ -1,7 +1,7 @@
-from wechatpy.pay.base import BaseWeChatPayAPI
+from .. base import BaseWeChatPayScoreAPI
 
 
-class PayScore(BaseWeChatPayAPI):
+class PayScore(BaseWeChatPayScoreAPI):
 
     def user_service_state(self, openid) -> bool:
         """
