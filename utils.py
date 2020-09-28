@@ -1,10 +1,10 @@
-import json
 import hmac
 import base64
 import hashlib
 import logging
 import traceback
-import collections
+import datetime
+from urllib.parse import urlencode
 from dateutil import parser
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
@@ -24,7 +24,14 @@ def iso8601_parse_date(iso8601_string):
     return _datetime
 
 
-def build_request_sign_str(method, endpoint, timestamp, nonce_str, request_body=None, meta=None) -> str:
+def date_parse_iso8601(date):
+    if isinstance(date, datetime.datetime):
+        return date.strftime('%Y%m%d%H%M%S')
+    else:
+        logger.warning('请传入 datetime.datetime 类型的日期')
+
+
+def build_request_sign_str(method, endpoint, timestamp, nonce_str, request_body_or_data=None, meta=None) -> str:
     """build_request_sign_str
     构造签名串
 
@@ -33,11 +40,13 @@ def build_request_sign_str(method, endpoint, timestamp, nonce_str, request_body=
     :param endpoint: URL 路径
     :param timestamp: 请求时间戳
     :param nonce_str: 请求随机串
-    :param request_body: 请求报文主体，当请求方法为POST或PUT时，请使用真实发送的JSON报文，请求方法为GET时，报文主体为空
+    :param request_body_or_data: 请求报文主体，当请求方法为POST或PUT时，请使用真实发送的JSON报文，请求方法为GET时，报文主体为空
     :param meta: 图片上传API，请使用meta对应的JSON报文
     :rtype: str
     """
     _method = method.upper()
+    if _method == 'GET':
+        endpoint += '?' + urlencode(request_body_or_data)
     if not endpoint.startswith('/'):
         endpoint = '/' + endpoint
     sign_str = ''
@@ -50,10 +59,10 @@ def build_request_sign_str(method, endpoint, timestamp, nonce_str, request_body=
     elif _method == 'GET':
         sign_str += '\n'
     elif _method == 'POST' or _method == 'PUT':
-        if isinstance(request_body, dict):
-            sign_str += json.dumps(sort_dict(request_body)) + '\n'
+        if not isinstance(request_body_or_data, str):
+            raise TypeError('request_body should be str')
         else:
-            sign_str += request_body + '\n'
+            sign_str += request_body_or_data + '\n'
     else:
         raise TypeError('method invalid')
     return sign_str
@@ -180,27 +189,3 @@ def rsa_decrypt(encrypted_data, pem, password=None):
         )
     )
     return data
-
-
-def sort_dict(_dict: dict) -> collections.OrderedDict:
-    """sort_dict
-    去除字典中空值键并排序
-
-    :param _dict:
-    :rtype: collections.OrderedDict
-    """
-    if not isinstance(_dict, dict):
-        if not isinstance(_dict, list):
-            return _dict
-        for i in range(len(_dict)):
-            _dict[i] = sort_dict(_dict[i])
-        return _dict
-    keys = sorted(_dict.keys())
-    result = collections.OrderedDict()
-    for key in keys:
-        value = _dict.get(key)
-        if value is None:
-            continue
-        value = sort_dict(value)
-        result[key] = value
-    return result

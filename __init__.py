@@ -5,7 +5,6 @@ import logging
 import traceback
 
 import requests
-from urllib.parse import urlencode
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
@@ -16,7 +15,7 @@ from wechatpy.utils import random_string
 from wechatpy.exceptions import WeChatPayException
 from wechatpy.pay.base import BaseWeChatPayAPI
 from . utils import (
-    sort_dict, calculate_signature_rsa, check_signature_rsa, decrypt, get_serial_no, get_public_key, build_request_sign_str, build_response_sign_str
+    calculate_signature_rsa, check_signature_rsa, decrypt, get_serial_no, get_public_key, build_request_sign_str, build_response_sign_str
 )
 from . import api
 
@@ -92,25 +91,19 @@ class WeChatPayscore(object):
         else:
             url = url_or_endpoint
             endpoint = urlparse(url).path
-        request_body = ''
         if isinstance(kwargs.get('data', ''), dict):
             data = kwargs.pop('data')
             data.setdefault('service_id', self.service_id)
             data.setdefault('appid', self.appid)
-            data = sort_dict(data)
             if method.upper() == 'GET':
                 kwargs['params'] = data
-                request_body = data
-                endpoint += '?' + urlencode(data)
             else:
                 data = json.dumps(data)
-                logger.debug('data to json: %s' % data)
                 kwargs['data'] = data
-                request_body = data
 
         nonce_str = random_string(32)
         timestamp = str(int(time.time()))
-        sign_str = build_request_sign_str(method, endpoint, timestamp, nonce_str, request_body)
+        sign_str = build_request_sign_str(method, endpoint, timestamp, nonce_str, data)
         signature = calculate_signature_rsa(sign_str, self.mch_key)
         algorithm = 'WECHATPAY2-SHA256-RSA2048'
         mch_serial = get_serial_no(self.mch_cert_pem)
