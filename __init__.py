@@ -92,6 +92,7 @@ class WeChatPayscore(object):
         else:
             url = url_or_endpoint
             endpoint = urlparse(url).path
+        data = ''
         if isinstance(kwargs.get('data', ''), dict):
             data = kwargs.pop('data')
             data.setdefault('service_id', self.service_id)
